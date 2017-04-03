@@ -1,14 +1,73 @@
 <!DOCTYPE html>
-<html>
+<meta charset="utf-8">
+<style>
+    line {
+        stroke: #ccc;
+        stroke-width: 1.5px;
+    }
+    
+    .node text {
+        pointer-events: none;
+        font: 10px sans-serif;
+    }
+</style>
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Dijkstra Trest Page</title>
+<body>
+    <script src="https://d3js.org/d3.v3.min.js"></script>
     <script src="edge.js"></script>
     <script src="heap.js"></script>
-</head>
+    <script src="dijkstra.js"></script>
+    <script src="disjoint.js"></script>
+    <script src="kruskal.js"></script>
+    <script>
+        var width = 960
+            , height = 500;
+        var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
+        var force = d3.layout.force().size([width, height]).linkDistance(100);;
 
-<body> </body>
-
-</html>
+        function toD3(size, connected, min, max) {
+            var g = GenerateGraph(size, connected, min, max);
+            var graph = {};
+            for (var i = 0; i < g.nodes.length; i++) {
+                var a = [];
+                for (var j = 0; j < g.nodes[i].adjacencyArray.length; j++) {
+                    a.push(g.nodes[i].adjacencyArray[j].destination);
+                }
+                graph[i.toString()] = a;
+            }
+            console.log(JSON);
+            var nodes = d3.values(graph)
+                , links = d3.merge(nodes.map(function (source) {
+                    return source.map(function (target) {
+                        return {
+                            source: source
+                            , target: graph[target]
+                        };
+                    });
+                }));
+            force.nodes(nodes).links(links).start();
+            var link = svg.selectAll(".link").data(links).enter().append("line");
+            var node = svg.selectAll(".node").data(nodes).enter().append("g").attr("class", "node").call(force.drag)
+            node.append("text").attr("dx", 12).attr("dy", ".35em").text(function (d) {
+                console.log(d)
+                return d.index
+            }).append("circle").attr("r", 5);
+            force.on("tick", function () {
+                link.attr("x1", function (d) {
+                    return d.source.x;
+                }).attr("y1", function (d) {
+                    return d.source.y;
+                }).attr("x2", function (d) {
+                    return d.target.x;
+                }).attr("y2", function (d) {
+                    return d.target.y;
+                });
+                node.attr("cx", function (d) {
+                    return d.x;
+                }).attr("cy", function (d) {
+                    return d.y;
+                });
+            });
+        }
+    </script>
+</body>

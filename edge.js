@@ -1,19 +1,20 @@
-var nodeDictionary = [];
-
 function AdjacencyEntry(src, destination, weight) {
     this.destination = destination;
     this.src = src;
     this.weight = weight;
 }
 
-function Node(key) {
+function Node(key, graph) {
     this.key = key;
     this.adjacencyArray = [];
-    nodeDictionary[key] = this;
+    this.previous = null;
+    this.distance = -1;
+    this.graph = graph;
+    this.graph.nodeDictionary[key] = this;
 }
 Node.prototype.addEdge = function (key, weight) {
     this.adjacencyArray.push(new AdjacencyEntry(this.key, key, weight));
-    nodeDictionary[key].adjacencyArray.push(new AdjacencyEntry(key, this.key, weight));
+    this.graph.nodeDictionary[key].adjacencyArray.push(new AdjacencyEntry(key, this.key, weight));
     return true;
 }
 Node.prototype.hasEdge = function (dest) {
@@ -25,18 +26,21 @@ Node.prototype.hasEdge = function (dest) {
     return false;
 }
 
-function Graph() {
+function Graph(max) {
     this.nodes = [];
+    this.max = max;
+    this.nodeDictionary = [];
+    this.edges = [];
 }
 Graph.prototype.addNode = function (node) {
     this.nodes.push(node);
 }
 
 function GenerateGraph(size, connectedPercent, weightMin, weightMax) {
-    var graph = new Graph();
+    var graph = new Graph(weightMax);
     var key = 0;
     for (var i = 0; i < size; i++) {
-        var node = new Node(key);
+        var node = new Node(key, graph);
         key++;
         graph.addNode(node);
     }
@@ -47,6 +51,11 @@ function GenerateGraph(size, connectedPercent, weightMin, weightMax) {
             if (addEdge <= localPercent && i != j && !graph.nodes[i].hasEdge(graph.nodes[j])) {
                 var weight = Math.floor((Math.random() * weightMax) + weightMin);
                 graph.nodes[i].addEdge(graph.nodes[j].key, weight);
+                graph.edges.push({
+                    a: graph.nodes[j]
+                    , b: graph.nodes[i]
+                    , w: weight
+                });
             }
         }
     }
