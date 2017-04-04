@@ -63,11 +63,12 @@ MaxHeap.prototype.downHeap = function (nodeIndex) {
     }
 }
 MaxHeap.prototype.increaseKey = function (nodeKey, newVal) {
-    if (this.dictionary[nodeKey] > newVal) {
-        console.log('death to the kind')
-    }
     this.dictionary[nodeKey] = newVal;
-    this.upHeap(nodeKey);
+    for (var i = 0; i < this.nodes.length; i++) {
+        if (this.nodes[i] == nodeKey) {
+            this.upHeap(i);
+        }
+    }
 }
 MaxHeap.prototype.swap = function (a, b) {
     var intermediate = this.nodes[a];

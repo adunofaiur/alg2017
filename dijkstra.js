@@ -1,7 +1,7 @@
 //array-based dijkstra
 function Dijkstra(graph, srcKey, destKey) {
     var vertexSet = [];
-    var INFINITY = graph.max + 1;
+    var INFINITY = graph.max + 5;
     for (var i = 0; i < graph.nodes.length; i++) {
         //reset all vertices
         var v = graph.nodes[i];
