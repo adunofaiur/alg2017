@@ -1,20 +1,36 @@
+function heapSort(edgeArray) {
+    var dictOfWeight = [];
+    var dictOfEdges = [];
+    var heap = new MaxHeap(dictOfWeight);
+    for (var i = 0; i < edgeArray.length; i++) {
+        dictOfWeight[i] = edgeArray[i].w;
+        dictOfEdges[i] = edgeArray[i];
+        edgeArray[i].heapSortKey = i;
+        heap.insert(i);
+    }
+    var sortedArrayOfIndices = []
+    for (var i = 0; i < edgeArray.length; i++) {
+        sortedArrayOfIndices = heap.extractMax();
+    }
+    var sortedArray = [];
+    for (var i = 0; i < sortedArrayOfIndices.length; i++) {
+        sortedArray.push(dictOfEdges[sortedArrayOfIndices[i]]);
+    }
+    edgeArray = sortedArray;
+}
+
 function kruskal(graph, src, dest) {
     //instead of creating a new data structure for the forest
     //I somewhat sloppily just add new data fields for the MST 
     //to my original graph 
     //get all edges in g
     var edges = graph.edges;
-    edges.sort(function (a, b) {
-        if (a.w > b.w) {
-            return -1;
-        }
-        else if (a.w < b.w) {
-            return 1;
-        }
-        else {
-            return 0;
-        }
-    })
+    var start = performance.now();
+    heapSort(graph.edges);
+    var duration = performance.now() - start;
+    kruskalsHeapSortTimers.push({
+        time: duration
+    });
     for (var i = 0; i < graph.nodes.length; i++) {
         makeSet(graph.nodes[i]);
         //
@@ -40,7 +56,10 @@ function kruskal(graph, src, dest) {
 
 function dfsK(graph, src, dest) {
     if (src.key == dest.key) {
-        return [dest.key];
+        return [{
+            key: dest.key
+            , dist: 1000
+        }];
     }
     else {
         src.kVisited = true;
@@ -56,7 +75,10 @@ function dfsK(graph, src, dest) {
             if (nodeToLookAt.kVisited != true) {
                 var maybePath = dfsK(graph, nodeToLookAt, dest);
                 if (maybePath.length > 0) {
-                    maybePath.unshift(src.key);
+                    maybePath.unshift([{
+                        key: src.key
+                        , dist: edge.w
+                    }]);
                     return maybePath;
                 }
             }
@@ -104,11 +126,29 @@ function testAll(size, percent, min, max) {
     var path = kruskal(g, src, dest);
     var path2 = Dijkstra(g, src, dest);
     var path3 = DijktraHeap(g, src, dest);
-    console.log("Kruskal: ")
+    var min1 = max + 1;
+    for (var i = 0; i < path.length; i++) {
+        if (path[i].dist < min) {
+            min1 = path[i].dist;
+        }
+    }
+    var min2 = max + 1;
+    for (var i = 0; i < path2.length; i++) {
+        if (path2[i].dist < min) {
+            min2 = path2[i].dist;
+        }
+    }
+    var min3 = max + 1;
+    for (var i = 0; i < path3.length; i++) {
+        if (path3[i].dist < min) {
+            min3 = path3[i].dist;
+        }
+    }
+    console.log("Kruskal Length: " + path.length + " Min: " + min1)
     console.log(path);
-    console.log("Dijkstra Array: ")
+    console.log("Dijkstra Length: " + path2.length + " Min: " + min2)
     console.log(path2)
-    console.log("Dijkstra Heap: ")
+    console.log("Dijkstra Heap Length: " + path3.length + " Min: " + min3)
     console.log(path3)
     if (path.length != path2.length) {
         console.log('fuck')

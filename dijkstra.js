@@ -2,23 +2,6 @@
 function Dijkstra(graph, srcKey, destKey) {
     var vertexSet = [];
     var INFINITY = graph.max + 1;
-
-    function pathToNode(u, srcKey) {
-        var path = [];
-        if (u.previous == null) {
-            return [-1]
-        }
-        path.push(u.key);
-        var considering = u;
-        while (considering.previous != null) {
-            path.unshift(considering.previous);
-            if (considering.previous == srcKey) {
-                return path;
-            }
-            considering = graph.nodeDictionary[considering.previous]
-        }
-        return path;
-    }
     for (var i = 0; i < graph.nodes.length; i++) {
         //reset all vertices
         var v = graph.nodes[i];
@@ -36,7 +19,7 @@ function Dijkstra(graph, srcKey, destKey) {
     while (vertexSet.length > 0) {
         var u = removeMaxFromArray(vertexSet);
         if (u.key == destKey && u.distance != -1) {
-            return pathToNode(graph.nodeDictionary[destKey], srcKey);
+            return pathToNode(graph, graph.nodeDictionary[destKey], srcKey);
         }
         for (var i = 0; i < u.adjacencyArray.length; i++) {
             var dest = graph.nodeDictionary[u.adjacencyArray[i].destination];
@@ -52,30 +35,36 @@ function Dijkstra(graph, srcKey, destKey) {
             }
         }
     }
-    return pathToNode(graph.nodeDictionary[destKey], srcKey);
+    return pathToNode(graph, graph.nodeDictionary[destKey], srcKey);
+}
+
+function pathToNode(graph, u, srcKey) {
+    var path = [];
+    if (u.previous == null) {
+        return [-1]
+    }
+    path.push({
+        key: u.key
+        , dist: u.distance
+    });
+    var considering = u;
+    while (considering.previous != null) {
+        path.unshift({
+            key: considering.previous
+            , dist: graph.nodeDictionary[considering.previous].distance
+        });
+        if (considering.previous == srcKey) {
+            return path;
+        }
+        considering = graph.nodeDictionary[considering.previous]
+    }
+    return path;
 }
 
 function DijktraHeap(graph, srcKey, destKey) {
     var bandwidthDictionary = [];
     var vertexSet = new MaxHeap(bandwidthDictionary);
     var INFINITY = graph.max + 1;
-
-    function pathToNode(u, srcKey) {
-        var path = [];
-        if (u.previous == null) {
-            return [-1]
-        }
-        path.push(u.key);
-        var considering = u;
-        while (considering.previous != null) {
-            path.unshift(considering.previous);
-            if (considering.previous == srcKey) {
-                return path;
-            }
-            considering = graph.nodeDictionary[considering.previous]
-        }
-        return path;
-    }
     for (var i = 0; i < graph.nodes.length; i++) {
         //reset all vertices
         var v = graph.nodes[i];
@@ -90,12 +79,12 @@ function DijktraHeap(graph, srcKey, destKey) {
         w.previous = srcKey;
         w.distance = src.adjacencyArray[i].weight;
         bandwidthDictionary[w.key] = w.distance;
-        vertexSet.insert(w)
+        vertexSet.insert(w.key)
     }
     while (vertexSet.size > 1) {
-        var u = vertexSet.extractMax();
+        var u = graph.nodeDictionary[vertexSet.extractMax()];
         if (u.key == destKey && u.distance != -1) {
-            return pathToNode(graph.nodeDictionary[destKey], srcKey);
+            return pathToNode(graph, graph.nodeDictionary[destKey], srcKey);
         }
         for (var i = 0; i < u.adjacencyArray.length; i++) {
             var dest = graph.nodeDictionary[u.adjacencyArray[i].destination];
@@ -104,7 +93,7 @@ function DijktraHeap(graph, srcKey, destKey) {
                 dest.previous = u.key;
                 dest.distance = Math.min(u.distance, edgeWeight)
                 bandwidthDictionary[dest.key] = dest.distance;
-                vertexSet.insert(dest);
+                vertexSet.insert(dest.key);
             }
             else if (dest.distance < Math.min(u.distance, edgeWeight)) {
                 dest.distance = Math.min(u.distance, edgeWeight);
@@ -114,7 +103,7 @@ function DijktraHeap(graph, srcKey, destKey) {
             }
         }
     }
-    return pathToNode(graph.nodeDictionary[destKey], srcKey);
+    return pathToNode(graph, graph.nodeDictionary[destKey], srcKey);
 }
 
 function removeMaxFromArray(array) {
